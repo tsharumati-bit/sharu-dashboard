@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharu's Life Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#faf7f2;--warm:#8b5e3c;--amber:#d4956a;--green:#7a9e7e;
+  --rose:#c4897a;--deep:#4a2f1e;--sand:#f0e8da;--main:#3d2b1f;
+  --muted:#8a7060;--card:#fffdf9;--border:#e8ddd0;
+}
+body{font-family:'DM Sans',sans-serif;background:#f5ede0;color:var(--main);min-height:100vh;padding:20px}
+.wrap{max-width:820px;margin:0 auto}
+.dash{background:var(--cream);border-radius:20px;overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 24px rgba(74,47,30,0.08)}
+.topbar{background:var(--warm);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.topbar h1{font-family:'Lora',serif;font-size:20px;color:#fffdf9;font-weight:600;letter-spacing:-0.01em}
+.topbar span{font-size:12px;color:rgba(255,253,249,0.8)}
+.tabs{display:flex;background:var(--sand);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:12px 18px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;user-select:none}
+.tab.active{color:var(--warm);border-bottom-color:var(--warm);background:var(--cream)}
+.tab:hover:not(.active){color:var(--main)}
+.panel{display:none;padding:18px;gap:12px;flex-direction:column}
+.panel.active{display:flex}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+.clabel{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{font-family:'Lora',serif;font-size:28px;font-weight:600;color:var(--deep);line-height:1}
+.sub{font-size:12px;color:var(--muted);margin-top:4px}
+.bar{height:7px;background:var(--sand);border-radius:99px;overflow:hidden;margin:8px 0 3px}
+.fill{height:100%;border-radius:99px;transition:width .5s ease}
+.fb{background:var(--warm)}.fg{background:var(--green)}.fa{background:var(--amber)}.fr{background:var(--rose)}
+.row-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.field{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--card);color:var(--main);outline:none;transition:border-color .2s}
+.field:focus{border-color:var(--warm)}
+select.field{cursor:pointer}
+.btn{padding:9px 16px;background:var(--warm);color:#fffdf9;border:none;border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;white-space:nowrap;transition:background .15s}
+.btn:hover{background:var(--deep)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-out{background:transparent;color:var(--warm);border:1px solid var(--warm)}
+.btn-out:hover{background:var(--sand)}
+.btn-danger{background:transparent;color:#c47a7a;border:none;font-size:13px;cursor:pointer;padding:3px 7px;border-radius:5px;font-family:'DM Sans',sans-serif;line-height:1;flex-shrink:0}
+.btn-danger:hover{background:#fdecea}
+.irow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.log-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.log-row:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dw{background:var(--warm)}.dg{background:var(--green)}.da{background:var(--amber)}.dr{background:var(--rose)}
+.ltxt{font-size:13px;flex:1;color:var(--main)}
+.lmeta{font-size:11px;color:var(--muted);white-space:nowrap}
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;flex-shrink:0}
+.bg{background:#e8f5e9;color:#2e7d32}.ba{background:#fef3e2;color:#8a5a00}.br{background:#fdecea;color:#8b3a2e}
+.check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.check.done{background:var(--green);border-color:var(--green)}
+.check.done::after{content:'';display:block;width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translate(-1px,-1px)}
+.struck{text-decoration:line-through;color:var(--muted)}
+.sday{border-radius:8px;padding:8px 4px;text-align:center;font-size:10px;font-weight:500}
+.sg{background:#c8e6c9;color:#1b5e20}.so{background:#fff3e0;color:#e65100}.sp{background:#fce4ec;color:#880e4f}.sn{background:var(--sand);color:var(--muted)}
+.glass{width:34px;height:42px;border-radius:5px 5px 9px 9px;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.save-note{font-size:11px;color:var(--green);margin-top:6px;opacity:0;transition:opacity .3s;height:16px}
+.save-note.show{opacity:1}
+.section-h{font-family:'Lora',serif;font-size:15px;font-weight:600;color:var(--deep);margin-bottom:10px}
+.empty{font-size:13px;color:var(--muted);padding:8px 0;font-style:italic}
+.legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+@media(max-width:600px){
+  .grid3{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  body{padding:10px}
+  .topbar h1{font-size:17px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="dash">
+<div class="topbar">
+  <h1>Sharu's Life Dashboard</h1>
+  <span id="dt"></span>
+</div>
+<div class="tabs">
+  <div class="tab active" data-tab="body">💪 Body Goals</div>
+  <div class="tab" data-tab="food">🥗 Eating</div>
+  <div class="tab" data-tab="sleep">🌙 Sleep</div>
+  <div class="tab" data-tab="budget">💰 Budget</div>
+  <div class="tab" data-tab="todo">✅ To-Do</div>
+</div>
+
+<!-- BODY -->
+<div class="panel active" id="tab-body">
+  <div class="grid3">
+    <div class="card"><div class="clabel">Current Weight</div><div class="stat" id="b-cur">—</div><div class="sub">kg</div></div>
+    <div class="card"><div class="clabel">Goal Weight</div><div class="stat" id="b-goal">—</div><div class="sub">kg target</div></div>
+    <div class="card"><div class="clabel">To Lose</div><div class="stat" id="b-diff">—</div><div class="sub">kg remaining</div></div>
+  </div>
+  <div class="card">
+    <div class="clabel">Progress to goal</div>
+    <div class="row-label"><span>Start: <span id="b-start-lbl">—</span> kg</span><span id="b-pct">0%</span></div>
+    <div class="bar"><div class="fill fb" id="b-bar" style="width:0%"></div></div>
+    <div class="row-label"><span>Current: <span id="b-cur2">—</span> kg</span><span>Goal: <span id="b-goal2">—</span> kg</span></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="clabel">Update weight stats</div>
+      <div style="margin-bottom:10px"><div class="clabel" style="margin-bottom:4px">Start weight (kg)</div><input class="field" id="inp-start" type="number" placeholder="e.g. 74"></div>
+      <div style="margin-bottom:10px"><div class="clabel" style="margin-bottom:4px">Current weight (kg)</div><input class="field" id="inp-cur" type="number" placeholder="e.g. 68"></div>
+      <div style="margin-bottom:10px"><div class="clabel" style="margin-bottom:4px">Goal weight (kg)</div><input class="field" id="inp-goal" type="number" placeholder="e.g. 62"></div>
+      <button class="btn" style="width:100%" onclick="saveWeight()">Save stats</button>
+      <div class="save-note" id="w-saved">✓ Saved!</div>
+    </div>
+    <div class="card">
+      <div class="clabel">Weekly workouts</div>
+      <div class="row-label" style="margin-bottom:6px"><span>This week</span><span id="wo-count">0 / 5</span></div>
+      <div class="bar"><div class="fill fg" id="wo-bar" style="width:0%"></div></div>
+      <div style="display:flex;gap:5px;margin:12px 0;flex-wrap:wrap" id="wo-days"></div>
+      <div class="irow">
+        <select class="field" id="wo-type" style="flex:1">
+          <option>Strength training</option><option>Cardio</option><option>HIIT</option>
+          <option>Yoga / Stretch</option><option>Walk / Run</option><option>Rest day</option>
+        </select>
+        <button class="btn btn-sm" onclick="logWorkout()">Log</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-h">Workout history</div>
+    <div id="wo-log"></div>
+  </div>
+</div>
+
+<!-- FOOD -->
+<div class="panel" id="tab-food">
+  <div class="grid3">
+    <div class="card"><div class="clabel">Calories today</div><div class="stat" id="f-cal">0</div><div class="sub">/ <span id="f-cal-goal">1800</span> kcal</div><div class="bar"><div class="fill fa" id="f-cal-bar" style="width:0%"></div></div></div>
+    <div class="card"><div class="clabel">Protein today</div><div class="stat" id="f-pro">0</div><div class="sub">/ <span id="f-pro-goal">120</span>g</div><div class="bar"><div class="fill fb" id="f-pro-bar" style="width:0%"></div></div></div>
+    <div class="card"><div class="clabel">Water glasses</div><div class="stat" id="f-water">0</div><div class="sub">/ 8 glasses</div><div class="bar"><div class="fill fg" id="f-water-bar" style="width:0%"></div></div></div>
+  </div>
+  <div class="card">
+    <div class="section-h">Daily goals</div>
+    <div class="irow">
+      <input class="field" id="goal-cal" type="number" placeholder="Calorie goal (kcal)" style="flex:1">
+      <input class="field" id="goal-pro" type="number" placeholder="Protein goal (g)" style="flex:1">
+      <button class="btn btn-sm" onclick="saveFoodGoals()">Save goals</button>
+    </div>
+    <div class="save-note" id="fg-saved">✓ Goals saved!</div>
+  </div>
+  <div class="card">
+    <div class="section-h">Log a meal</div>
+    <div class="irow">
+      <select class="field" id="m-type" style="width:110px;flex-shrink:0"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+      <input class="field" id="m-desc" placeholder="What did you eat?" style="flex:1">
+      <input class="field" id="m-cal" type="number" placeholder="kcal" style="width:70px;flex-shrink:0">
+      <input class="field" id="m-pro" type="number" placeholder="g prot" style="width:70px;flex-shrink:0">
+      <button class="btn btn-sm" onclick="logMeal()">Add</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-h">Today's meals</div>
+    <div id="meal-log"><div class="empty">No meals logged today.</div></div>
+  </div>
+  <div class="card">
+    <div class="section-h">Water tracker</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="water-row"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-out btn-sm" onclick="changeWater(1)">+ Glass</button>
+      <button class="btn btn-out btn-sm" onclick="changeWater(-1)">− Glass</button>
+    </div>
+  </div>
+</div>
+
+<!-- SLEEP -->
+<div class="panel" id="tab-sleep">
+  <div class="grid2">
+    <div class="card"><div class="clabel">Last logged sleep</div><div class="stat" id="sl-last">—</div><div class="sub" id="sl-feel"></div></div>
+    <div class="card"><div class="clabel">Weekly average</div><div class="stat" id="sl-avg">—</div><div class="sub">Goal: 8 hours</div></div>
+  </div>
+  <div class="card">
+    <div class="section-h">This week</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px" id="sl-grid"></div>
+    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="legend-dot" style="background:#c8e6c9"></span>7h+ (great)</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="legend-dot" style="background:#fff3e0"></span>5–7h (ok)</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="legend-dot" style="background:#fce4ec"></span>&lt;5h (poor)</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-h">Log tonight's sleep</div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div><div class="clabel" style="margin-bottom:4px">Bedtime</div><input class="field" type="time" id="sl-bed" value="23:00"></div>
+      <div><div class="clabel" style="margin-bottom:4px">Wake time</div><input class="field" type="time" id="sl-wake" value="07:00"></div>
+    </div>
+    <div class="clabel" style="margin-bottom:8px">How did you feel?</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-out btn-sm mood-btn" data-m="Refreshed" onclick="pickMood(this)">😊 Refreshed</button>
+      <button class="btn btn-out btn-sm mood-btn" data-m="Okay" onclick="pickMood(this)">😐 Okay</button>
+      <button class="btn btn-out btn-sm mood-btn" data-m="Tired" onclick="pickMood(this)">😴 Tired</button>
+    </div>
+    <button class="btn" onclick="logSleep()">Save sleep</button>
+    <div class="save-note" id="sl-saved">✓ Sleep logged!</div>
+  </div>
+  <div class="card">
+    <div class="section-h">Sleep history</div>
+    <div id="sl-hist"><div class="empty">No sleep logged yet.</div></div>
+  </div>
+</div>
+
+<!-- BUDGET -->
+<div class="panel" id="tab-budget">
+  <div class="grid3">
+    <div class="card"><div class="clabel">Monthly budget</div><div class="stat">RM <span id="bu-total">3,000</span></div><div class="sub">set below</div></div>
+    <div class="card"><div class="clabel">Spent this month</div><div class="stat">RM <span id="bu-spent">0</span></div><div class="bar"><div class="fill fa" id="bu-bar" style="width:0%"></div></div></div>
+    <div class="card"><div class="clabel">Remaining</div><div class="stat" id="bu-rem-stat">RM <span id="bu-rem">3,000</span></div><div class="sub" id="bu-status">left this month</div></div>
+  </div>
+  <div class="card">
+    <div class="section-h">Set monthly budget</div>
+    <div class="irow">
+      <input class="field" id="bu-budget-inp" type="number" placeholder="e.g. 3000" style="flex:1">
+      <button class="btn btn-sm" onclick="saveBudget()">Save</button>
+    </div>
+    <div class="save-note" id="bu-saved">✓ Budget saved!</div>
+  </div>
+  <div class="card">
+    <div class="section-h">Log an expense</div>
+    <div class="irow">
+      <select class="field" id="exp-cat" style="width:145px;flex-shrink:0">
+        <option>Food & groceries</option><option>Transport</option><option>Gym & health</option>
+        <option>Entertainment</option><option>Shopping</option><option>Bills</option><option>Others</option>
+      </select>
+      <input class="field" id="exp-desc" placeholder="What for?" style="flex:1">
+      <input class="field" id="exp-amt" type="number" placeholder="RM" style="width:90px;flex-shrink:0">
+      <button class="btn btn-sm" onclick="logExpense()">Add</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-h">Expense log</div>
+    <div id="exp-log"><div class="empty">No expenses logged.</div></div>
+  </div>
+</div>
+
+<!-- TODO -->
+<div class="panel" id="tab-todo">
+  <div class="card">
+    <div class="section-h">Add a task</div>
+    <div class="irow">
+      <input class="field" id="td-inp" placeholder="What do you need to do?" style="flex:1" onkeydown="if(event.key==='Enter')addTodo()">
+      <select class="field" id="td-pri" style="width:100px;flex-shrink:0"><option>High</option><option selected>Medium</option><option>Low</option></select>
+      <input class="field" id="td-date" type="date" style="width:145px;flex-shrink:0">
+      <button class="btn btn-sm" onclick="addTodo()">Add</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-h">Pending tasks</div>
+    <div id="td-pending"><div class="empty">Nothing pending — add a task above!</div></div>
+  </div>
+  <div class="card">
+    <div class="section-h">Completed ✓</div>
+    <div id="td-done"><div class="empty">No completed tasks yet.</div></div>
+  </div>
+</div>
+
+</div><!-- end dash -->
+</div><!-- end wrap -->
+
+<script>
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DOT=['dw','dg','da','dr'];
+
+document.getElementById('dt').textContent=new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+function lsGet(key){try{const v=localStorage.getItem(key);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function getWeekStart(){const d=new Date();const day=d.getDay();const diff=d.getDate()-(day===0?6:day-1);const w=new Date(d);w.setDate(diff);w.setHours(0,0,0,0);return w.getTime();}
+function fmtDate(ts){return new Date(ts).toLocaleDateString('en-MY',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+function flash(id){const el=document.getElementById(id);if(!el)return;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+
+// ===== BODY =====
+function initBody(){
+  const d=lsGet('sharu-body')||{start:'',cur:'',goal:''};
+  if(d.start)document.getElementById('inp-start').value=d.start;
+  if(d.cur)document.getElementById('inp-cur').value=d.cur;
+  if(d.goal)document.getElementById('inp-goal').value=d.goal;
+  renderBody(d);
+  renderWorkouts(lsGet('sharu-workouts')||[]);
+}
+function renderBody(d){
+  const cur=parseFloat(d.cur)||0;const goal=parseFloat(d.goal)||0;const start=parseFloat(d.start)||0;
+  const diff=Math.max(0,cur-goal);
+  document.getElementById('b-cur').textContent=cur||'—';
+  document.getElementById('b-goal').textContent=goal||'—';
+  document.getElementById('b-diff').textContent=cur&&goal?diff.toFixed(1):'—';
+  document.getElementById('b-cur2').textContent=cur||'—';
+  document.getElementById('b-goal2').textContent=goal||'—';
+  document.getElementById('b-start-lbl').textContent=start||'—';
+  const range=start-goal;
+  const pct=range>0?Math.round(Math.min(100,Math.max(0,((start-cur)/range)*100))):0;
+  document.getElementById('b-bar').style.width=pct+'%';
+  document.getElementById('b-pct').textContent=pct+'%';
+}
+function saveWeight(){
+  const d={start:parseFloat(document.getElementById('inp-start').value)||0,cur:parseFloat(document.getElementById('inp-cur').value)||0,goal:parseFloat(document.getElementById('inp-goal').value)||0};
+  lsSet('sharu-body',d);renderBody(d);flash('w-saved');
+}
+function renderWorkouts(wos){
+  const week=getWeekStart();
+  const thisWeek=wos.filter(w=>w.ts>=week);
+  const count=thisWeek.length;
+  document.getElementById('wo-count').textContent=count+' / 5';
+  document.getElementById('wo-bar').style.width=Math.round(Math.min(100,(count/5)*100))+'%';
+  const days=document.getElementById('wo-days');days.innerHTML='';
+  for(let i=0;i<7;i++){
+    const dayTs=week+i*86400000;
+    const done=thisWeek.some(w=>w.ts>=dayTs&&w.ts<dayTs+86400000);
+    const d=document.createElement('div');
+    d.style.cssText='width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;';
+    d.style.background=done?'#c8e6c9':'var(--sand)';d.style.color=done?'#1b5e20':'var(--muted)';
+    d.textContent=DAYS[i][0];days.appendChild(d);
+  }
+  const log=document.getElementById('wo-log');
+  if(!wos.length){log.innerHTML='<div class="empty">No workouts logged yet.</div>';return;}
+  log.innerHTML='';
+  wos.slice().reverse().slice(0,15).forEach(w=>{
+    const row=document.createElement('div');row.className='log-row';
+    row.innerHTML='<div class="dot dg"></div><div class="ltxt">'+w.type+'</div><div class="lmeta">'+fmtDate(w.ts)+'</div><button class="btn-danger" onclick="deleteWorkout('+w.ts+')">✕</button>';
+    log.appendChild(row);
+  });
+}
+function logWorkout(){const type=document.getElementById('wo-type').value;const wos=lsGet('sharu-workouts')||[];wos.push({type,ts:Date.now()});lsSet('sharu-workouts',wos);renderWorkouts(wos);}
+function deleteWorkout(ts){let wos=lsGet('sharu-workouts')||[];wos=wos.filter(w=>w.ts!==ts);lsSet('sharu-workouts',wos);renderWorkouts(wos);}
+
+// ===== FOOD =====
+function initFood(){
+  const goals=lsGet('sharu-food-goals')||{cal:1800,pro:120};
+  document.getElementById('f-cal-goal').textContent=goals.cal;
+  document.getElementById('f-pro-goal').textContent=goals.pro;
+  document.getElementById('goal-cal').value=goals.cal;
+  document.getElementById('goal-pro').value=goals.pro;
+  renderMeals(lsGet('sharu-meals-'+todayStr())||[],goals);
+  renderWater(lsGet('sharu-water-'+todayStr())||0);
+}
+function saveFoodGoals(){
+  const g={cal:parseInt(document.getElementById('goal-cal').value)||1800,pro:parseInt(document.getElementById('goal-pro').value)||120};
+  lsSet('sharu-food-goals',g);
+  document.getElementById('f-cal-goal').textContent=g.cal;
+  document.getElementById('f-pro-goal').textContent=g.pro;
+  flash('fg-saved');
+  renderMeals(lsGet('sharu-meals-'+todayStr())||[],g);
+}
+function logMeal(){
+  const type=document.getElementById('m-type').value;
+  const desc=document.getElementById('m-desc').value.trim()||type;
+  const cal=parseInt(document.getElementById('m-cal').value)||0;
+  const pro=parseInt(document.getElementById('m-pro').value)||0;
+  const key='sharu-meals-'+todayStr();
+  const meals=lsGet(key)||[];
+  meals.push({type,desc,cal,pro,ts:Date.now()});
+  lsSet(key,meals);
+  renderMeals(meals,lsGet('sharu-food-goals')||{cal:1800,pro:120});
+  document.getElementById('m-desc').value='';
+  document.getElementById('m-cal').value='';
+  document.getElementById('m-pro').value='';
+}
+function renderMeals(meals,goals){
+  const tc=meals.reduce((s,m)=>s+m.cal,0);const tp=meals.reduce((s,m)=>s+m.pro,0);
+  document.getElementById('f-cal').textContent=tc.toLocaleString();
+  document.getElementById('f-pro').textContent=tp;
+  document.getElementById('f-cal-bar').style.width=Math.round(Math.min(100,(tc/goals.cal)*100))+'%';
+  document.getElementById('f-pro-bar').style.width=Math.round(Math.min(100,(tp/goals.pro)*100))+'%';
+  const log=document.getElementById('meal-log');
+  if(!meals.length){log.innerHTML='<div class="empty">No meals logged today.</div>';return;}
+  log.innerHTML='';
+  meals.slice().reverse().forEach((m,i)=>{
+    const row=document.createElement('div');row.className='log-row';
+    row.innerHTML='<div class="dot '+DOT[i%4]+'"></div><div class="ltxt">'+m.desc+' <span style="font-size:11px;color:var(--muted)">— '+m.type+'</span></div><div class="lmeta">'+(m.cal?m.cal+' kcal':'')+(m.pro?' · '+m.pro+'g':'')+'</div><button class="btn-danger" onclick="deleteMeal('+m.ts+')">✕</button>';
+    log.appendChild(row);
+  });
+}
+function deleteMeal(ts){const key='sharu-meals-'+todayStr();let meals=lsGet(key)||[];meals=meals.filter(m=>m.ts!==ts);lsSet(key,meals);renderMeals(meals,lsGet('sharu-food-goals')||{cal:1800,pro:120});}
+function changeWater(delta){const key='sharu-water-'+todayStr();let w=lsGet(key)||0;w=Math.max(0,Math.min(8,w+delta));lsSet(key,w);renderWater(w);}
+function renderWater(count){
+  document.getElementById('f-water').textContent=count;
+  document.getElementById('f-water-bar').style.width=Math.round((count/8)*100)+'%';
+  const row=document.getElementById('water-row');row.innerHTML='';
+  for(let i=0;i<8;i++){
+    const g=document.createElement('div');g.className='glass';
+    const filled=i<count;
+    g.style.background=filled?'#b3e5fc':'transparent';
+    g.style.borderColor=filled?'#0288d1':'var(--border)';
+    g.style.color=filled?'#01579b':'var(--muted)';
+    g.textContent=filled?'~':'';
+    g.title='Glass '+(i+1);
+    g.onclick=()=>changeWater(filled?-(count-i):i+1-count);
+    row.appendChild(g);
+  }
+}
+
+// ===== SLEEP =====
+let slMood='';
+function initSleep(){const hist=lsGet('sharu-sleep')||[];renderSleepGrid(hist);renderSleepHist(hist);}
+function pickMood(el){
+  slMood=el.dataset.m;
+  document.querySelectorAll('.mood-btn').forEach(b=>{b.style.background='transparent';b.style.color='var(--warm)';});
+  el.style.background='var(--warm)';el.style.color='#fffdf9';
+}
+function logSleep(){
+  const bed=document.getElementById('sl-bed').value;const wake=document.getElementById('sl-wake').value;
+  const [bh,bm]=bed.split(':').map(Number);const [wh,wm]=wake.split(':').map(Number);
+  let mins=((wh*60+wm)-(bh*60+bm));if(mins<0)mins+=1440;
+  const h=parseFloat((mins/60).toFixed(1));
+  const hist=lsGet('sharu-sleep')||[];
+  hist.push({h,bed,wake,mood:slMood||'',ts:Date.now()});
+  lsSet('sharu-sleep',hist);renderSleepGrid(hist);renderSleepHist(hist);flash('sl-saved');
+}
+function sleepCls(h){return h>=7?'sg':h>=5?'so':'sp';}
+function renderSleepGrid(hist){
+  const week=getWeekStart();const grid=document.getElementById('sl-grid');grid.innerHTML='';
+  for(let i=0;i<7;i++){
+    const dayTs=week+i*86400000;
+    const entry=hist.filter(s=>s.ts>=dayTs&&s.ts<dayTs+86400000).pop();
+    const d=document.createElement('div');d.className='sday '+(entry?sleepCls(entry.h):'sn');
+    d.innerHTML='<div style="font-size:9px;margin-bottom:3px">'+DAYS[i]+'</div><div style="font-size:12px">'+(entry?entry.h+'h':'—')+'</div>';
+    grid.appendChild(d);
+  }
+  const recent=hist.slice(-1)[0];
+  if(recent){const hh=Math.floor(recent.h);const mm=Math.round((recent.h-hh)*60);document.getElementById('sl-last').textContent=hh+'h '+(mm?mm+'m':'');document.getElementById('sl-feel').textContent=recent.mood||'';}
+  if(hist.length){const last7=hist.slice(-7);const avg=last7.reduce((s,x)=>s+x.h,0)/last7.length;const ah=Math.floor(avg);const am=Math.round((avg-ah)*60);document.getElementById('sl-avg').textContent=ah+'h '+(am?am+'m':'');}
+}
+function renderSleepHist(hist){
+  const log=document.getElementById('sl-hist');
+  if(!hist.length){log.innerHTML='<div class="empty">No sleep logged yet.</div>';return;}
+  log.innerHTML='';
+  hist.slice().reverse().slice(0,14).forEach(s=>{
+    const row=document.createElement('div');row.className='log-row';
+    row.innerHTML='<div class="dot '+(s.h>=7?'dg':s.h>=5?'da':'dr')+'"></div><div class="ltxt">'+s.h+'h · '+s.bed+' → '+s.wake+(s.mood?' ('+s.mood+')':'')+'</div><div class="lmeta">'+fmtDate(s.ts)+'</div><button class="btn-danger" onclick="deleteSleep('+s.ts+')">✕</button>';
+    log.appendChild(row);
+  });
+}
+function deleteSleep(ts){let hist=lsGet('sharu-sleep')||[];hist=hist.filter(s=>s.ts!==ts);lsSet('sharu-sleep',hist);renderSleepGrid(hist);renderSleepHist(hist);}
+
+// ===== BUDGET =====
+function initBudget(){const budget=lsGet('sharu-budget')||3000;document.getElementById('bu-budget-inp').value=budget;renderBudget(budget,lsGet('sharu-expenses')||[]);}
+function saveBudget(){const b=parseFloat(document.getElementById('bu-budget-inp').value)||3000;lsSet('sharu-budget',b);renderBudget(b,lsGet('sharu-expenses')||[]);flash('bu-saved');}
+function logExpense(){
+  const cat=document.getElementById('exp-cat').value;
+  const desc=document.getElementById('exp-desc').value.trim()||cat;
+  const amt=parseFloat(document.getElementById('exp-amt').value)||0;
+  if(!amt)return;
+  const exps=lsGet('sharu-expenses')||[];exps.push({cat,desc,amt,ts:Date.now()});lsSet('sharu-expenses',exps);
+  renderBudget(lsGet('sharu-budget')||3000,exps);
+  document.getElementById('exp-desc').value='';document.getElementById('exp-amt').value='';
+}
+function renderBudget(budget,exps){
+  const monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);
+  const thisMonth=exps.filter(e=>e.ts>=monthStart.getTime());
+  const spent=thisMonth.reduce((s,e)=>s+e.amt,0);const rem=budget-spent;
+  document.getElementById('bu-total').textContent=budget.toLocaleString();
+  document.getElementById('bu-spent').textContent=spent.toFixed(2);
+  document.getElementById('bu-rem').textContent=Math.abs(rem).toFixed(2);
+  document.getElementById('bu-rem-stat').style.color=rem<0?'var(--rose)':'var(--deep)';
+  document.getElementById('bu-status').textContent=rem<0?'⚠ Over budget!':'left this month';
+  document.getElementById('bu-bar').style.width=Math.round(Math.min(100,(spent/budget)*100))+'%';
+  const log=document.getElementById('exp-log');
+  if(!exps.length){log.innerHTML='<div class="empty">No expenses logged.</div>';return;}
+  log.innerHTML='';
+  exps.slice().reverse().slice(0,25).forEach(e=>{
+    const row=document.createElement('div');row.className='log-row';
+    row.innerHTML='<div class="dot da"></div><div class="ltxt">'+e.desc+' <span style="font-size:11px;color:var(--muted)">('+e.cat+')</span></div><div class="lmeta">RM '+e.amt.toFixed(2)+' · '+fmtDate(e.ts)+'</div><button class="btn-danger" onclick="deleteExp('+e.ts+')">✕</button>';
+    log.appendChild(row);
+  });
+}
+function deleteExp(ts){let exps=lsGet('sharu-expenses')||[];exps=exps.filter(e=>e.ts!==ts);lsSet('sharu-expenses',exps);renderBudget(lsGet('sharu-budget')||3000,exps);}
+
+// ===== TODO =====
+function initTodo(){renderTodos(lsGet('sharu-todos')||[]);}
+function addTodo(){
+  const txt=document.getElementById('td-inp').value.trim();if(!txt)return;
+  const pri=document.getElementById('td-pri').value;const due=document.getElementById('td-date').value;
+  const todos=lsGet('sharu-todos')||[];todos.push({txt,pri,due,done:false,ts:Date.now()});
+  lsSet('sharu-todos',todos);renderTodos(todos);
+  document.getElementById('td-inp').value='';document.getElementById('td-date').value='';
+}
+function toggleTodo(ts){const todos=lsGet('sharu-todos')||[];const t=todos.find(x=>x.ts===ts);if(t)t.done=!t.done;lsSet('sharu-todos',todos);renderTodos(todos);}
+function deleteTodo(ts){let todos=lsGet('sharu-todos')||[];todos=todos.filter(t=>t.ts!==ts);lsSet('sharu-todos',todos);renderTodos(todos);}
+const priCls={High:'br',Medium:'ba',Low:'bg'};
+function renderTodos(todos){
+  const pending=todos.filter(t=>!t.done);const done=todos.filter(t=>t.done);
+  const pel=document.getElementById('td-pending');const del=document.getElementById('td-done');
+  if(!pending.length){pel.innerHTML='<div class="empty">All clear! Add a task above.</div>';}
+  else{
+    pel.innerHTML='';
+    pending.sort((a,b)=>{const o={High:0,Medium:1,Low:2};return o[a.pri]-o[b.pri];}).forEach(t=>{
+      const row=document.createElement('div');row.className='log-row';
+      row.innerHTML='<div class="check" onclick="toggleTodo('+t.ts+')"></div><div class="ltxt">'+t.txt+(t.due?'<span style="font-size:11px;color:var(--muted);margin-left:6px">due '+t.due+'</span>':'')+'</div><span class="badge '+priCls[t.pri]+'">'+t.pri+'</span><button class="btn-danger" onclick="deleteTodo('+t.ts+')">✕</button>';
+      pel.appendChild(row);
+    });
+  }
+  if(!done.length){del.innerHTML='<div class="empty">No completed tasks yet — keep going, Sharu!</div>';}
+  else{
+    del.innerHTML='';
+    done.slice().reverse().forEach(t=>{
+      const row=document.createElement('div');row.className='log-row';
+      row.innerHTML='<div class="check done" onclick="toggleTodo('+t.ts+')"></div><div class="ltxt struck">'+t.txt+'</div><span class="badge bg">Done ✓</span><button class="btn-danger" onclick="deleteTodo('+t.ts+')">✕</button>';
+      del.appendChild(row);
+    });
+  }
+}
+
+// init all
+initBody();initFood();initSleep();initBudget();initTodo();
+</script>
+</body>
+</html>
